@@ -347,7 +347,7 @@ python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
-# Terminal 1 — Backend
+#### Start the backend server like this
 
 ```bash
 cd backend
@@ -356,7 +356,6 @@ venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
-Start the backend server like this
 
 The API will be live at `http://localhost:8000`  
 Swagger docs: `http://localhost:8000/docs`
