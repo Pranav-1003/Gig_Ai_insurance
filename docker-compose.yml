@@ -1,0 +1,98 @@
+# ── Guardian v3 — docker-compose.yml ─────────────────────────────────────────
+# Full local stack: Postgres, Redis, FastAPI backend, Vite/React frontend (Nginx).
+#
+# Quick start:
+#   cp backend/.env.example backend/.env   # fill in secrets
+#   docker compose up --build
+#
+# The backend falls back to SQLite if DB URLs are not set, but Postgres is
+# included here for production-parity local dev.
+#
+# Ports exposed on your machine:
+#   http://localhost        → Guardian frontend (React SPA)
+#   http://localhost:8000   → FastAPI backend (direct, useful for /docs)
+#   localhost:5432          → Postgres (DBeaver / psql)
+#   localhost:6379          → Redis
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: guardian
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-guardian_dev_pw}
+      POSTGRES_MULTIPLE_DATABASES: guardian_workers,guardian_admin,guardian_analytics
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Helper script to create multiple databases in one container
+      - ./scripts/pg-init-multi-db.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guardian"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save "" --appendonly no  # no persistence needed for pub/sub
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── FastAPI Backend ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      # Override DB URLs to point at the Postgres container
+      WORKER_DB_URL:    postgresql+asyncpg://guardian:${POSTGRES_PASSWORD:-guardian_dev_pw}@postgres/guardian_workers
+      ADMIN_DB_URL:     postgresql+asyncpg://guardian:${POSTGRES_PASSWORD:-guardian_dev_pw}@postgres/guardian_admin
+      ANALYTICS_DB_URL: postgresql+asyncpg://guardian:${POSTGRES_PASSWORD:-guardian_dev_pw}@postgres/guardian_analytics
+      REDIS_URL:        redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; r=urllib.request.urlopen('http://localhost:8000/health'); exit(0 if r.status==200 else 1)\""]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    volumes:
+      # Persist SQLite fallback files (used if Postgres is not available)
+      - backend_data:/data
+
+  # ── React Frontend (Nginx) ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  backend_data:

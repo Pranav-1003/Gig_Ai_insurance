@@ -1,0 +1,24 @@
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.npm/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Exclude sqlite db except the empty base one if you want, but we will ignore it.
+*.db
+!guardian.db

@@ -1,0 +1,35 @@
+# ── Backend .dockerignore ─────────────────────────────────────────────────────
+# Keep the build context lean — excludes dev artifacts, local DBs, and secrets.
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Local SQLite databases (use Postgres in Docker)
+*.db
+
+# Secrets — never bake .env into the image; use env_file or secrets management
+.env
+
+# Dev/test artifacts
+*.log
+*.coverage
+htmlcov/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
