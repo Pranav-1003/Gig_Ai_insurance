@@ -4,7 +4,7 @@
 
 **GuardianAI** is a parametric micro-insurance platform protecting India's 10M+ delivery partners (Zomato, Swiggy, Amazon, Zepto) from income loss due to uncontrollable disruptions. Unlike traditional insurance (10-day claims), GuardianAI auto-triggers payouts within 3 hours when weather, strikes, or platform crashes cut worker earnings — using real-time AI and government alert APIs.
 
-**Team:** GenXplorers — P Sai Chaithanya, Pranav Prakash A, Pranhai Prakash A, Nikhil A, Anuttaman R
+**Team:** GenXplorers — P Sai Chaithanyia, Pranav Prakash A, Pranhai Prakash A, Nikhil A, Anuttaman R
 
 **Target:** Ravi Kumar (28, Zomato delivery partner, Thane, Mumbai — ₹500–700/day, loses 40% income during monsoon)  
 **Problem:** ₹1,800–2,000 loss per disruption event, with zero insurance products designed for weekly-paid gig workers  
